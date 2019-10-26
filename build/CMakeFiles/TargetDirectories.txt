@@ -1,0 +1,3 @@
+/media/ydc/DATA/Docnment/Desktop/ceshi/build/CMakeFiles/rebuild_cache.dir
+/media/ydc/DATA/Docnment/Desktop/ceshi/build/CMakeFiles/AGV.dir
+/media/ydc/DATA/Docnment/Desktop/ceshi/build/CMakeFiles/edit_cache.dir
