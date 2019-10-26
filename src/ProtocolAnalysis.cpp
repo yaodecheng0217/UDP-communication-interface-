@@ -3,12 +3,11 @@
  * @version: 
  * @Author: Yaodecheng
  * @Date: 2019-10-19 10:26:48
- * @LastEditors: Yaodecheng
- * @LastEditTime: 2019-10-19 17:15:27
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2019-10-26 18:22:14
  */
 
 #include "ProtocolAnalysis.h"
-#include "thread_base.h"
 ProtocolAnalysis::ProtocolAnalysis(OutputDataFun f)
     : _outputfun(f)
 {
@@ -20,55 +19,14 @@ ProtocolAnalysis::~ProtocolAnalysis()
 
 int ProtocolAnalysis::init(const int port)
 {
-    return udpmessage.init(port, dataprocess, this);
+    return UdpMessage::init(port, this);
 }
 struct MyStruct
 {
     uint32_t x;
     float y;
 };
-void *ProtocolAnalysis::dataprocess(std::vector<uint8_t> databuffer, void *ptr)
-{
-    ProtocolAnalysis *p = (ProtocolAnalysis *)ptr;
-    
-    /*printf("\nmemdata: ");
-    for (size_t i = 0; i < databuffer.size(); i++)
-    {
-        printf("%X ", databuffer[i]);
-    }
-    printf("\n");*/
-    
-    uint32_t bufferLength = databuffer.size();
-    if (databuffer[0] == 0x7f && databuffer[1] == 0xf7 && databuffer[bufferLength - 2] == 0xf7 && databuffer[bufferLength - 1] == 0x7f)
-    {
-        uint16_t Version;
-        memcpy(&Version, &databuffer[2], 2);
-        switch (Version)
-        {
-        case 1:
-        {
-            FrameDataStruct out;
-            out.source_id = databuffer[7];
-            out.cmd_id[0] = databuffer[8];
-            out.cmd_id[1] = databuffer[9];
-            out.cmd_type = databuffer[10];
 
-            uint32_t datalength;
-            memcpy(&datalength, &databuffer[11], 4);
-            out._databuff.resize(datalength);
-            if (datalength > 0)
-                memcpy(&out._databuff[0], &databuffer[15], datalength);
-            p->_outputfun(out);
-        }
-        break;
-
-        default:
-            break;
-        }
-    }
-
-    return 0;
-}
 void ProtocolAnalysis::sendData(const char *ip, int prot, FrameDataStruct sdata)
 {
     uint16_t Version = 1;
@@ -108,5 +66,47 @@ void ProtocolAnalysis::sendData(const char *ip, int prot, FrameDataStruct sdata)
     sendbuff[19 + dataLength] = 0xf7;
     sendbuff[20 + dataLength] = 0x7f;
 
-    udpmessage.messagsend(ip, prot, (char *)&sendbuff[0], dataLength + 21);
+    messagsend(ip, prot, (char *)&sendbuff[0], dataLength + 21);
+}
+
+void ProtocolAnalysis::CallBackFuntion(std::vector<uint8_t> databuffer, void *ptr)
+{
+     // ProtocolAnalysis *p = (ProtocolAnalysis *)ptr;
+    /*printf("\nmemdata: ");
+    for (size_t i = 0; i < databuffer.size(); i++)
+    {
+        printf("%X ", databuffer[i]);
+    }
+    printf("\n");*/
+    
+    uint32_t bufferLength = databuffer.size();
+    if (databuffer[0] == 0x7f && databuffer[1] == 0xf7 && databuffer[bufferLength - 2] == 0xf7 && databuffer[bufferLength - 1] == 0x7f)
+    {
+        uint16_t Version;
+        memcpy(&Version, &databuffer[2], 2);
+        switch (Version)
+        {
+        case 1:
+        {
+            FrameDataStruct out;
+            out.source_id = databuffer[7];
+            out.cmd_id[0] = databuffer[8];
+            out.cmd_id[1] = databuffer[9];
+            out.cmd_type = databuffer[10];
+
+            uint32_t datalength;
+            memcpy(&datalength, &databuffer[11], 4);
+            out._databuff.resize(datalength);
+            if (datalength > 0)
+                memcpy(&out._databuff[0], &databuffer[15], datalength);
+            _outputfun(out);
+        }
+        break;
+
+        default:
+            break;
+        }
+    }
+
+    return ;
 }

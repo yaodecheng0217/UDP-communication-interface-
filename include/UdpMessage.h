@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: Yaodecheng
  * @Date: 2019-10-13 14:02:01
- * @LastEditTime: 2019-10-26 14:44:05
+ * @LastEditTime: 2019-10-26 21:51:24
  * @LastEditors: Please set LastEditors
  */
 /*
@@ -46,30 +46,11 @@ int main()
 #include "mutexlock.hpp"
 #include <iostream>
 
-template <typename T>
-T bytes2T(unsigned char *bytes)
-{
-	T res = 0;
-	int n = sizeof(T);
-	memcpy(&res, bytes, n);
-	return res;
-}
-
-template <typename T>
-unsigned char *T2bytes(T u)
-{
-	int n = sizeof(T);
-	unsigned char *b = new unsigned char[n];
-	memcpy(b, &u, n);
-	return b;
-}
 class UdpMessage
 {
 public:
-	typedef void *(*Fun)(std::vector<uint8_t>,void *);
-
 	UdpMessage();
-	int init(int cliceport, Fun callback, void *);
+	int init(int cliceport, void *);
 	~UdpMessage();
 	void messagsend(const char *ip, int port, const char *data, int L);
 	void messagsend(const char *ip, int port, const std::string data);
@@ -89,15 +70,11 @@ private:
 	int port;
 	int sock_fd;
 	struct sockaddr_in addr;
-	int n = 0;
-	MutexLock sendcs;
-	bool massagready = false;
-	Fun callbackFun;
-
+	MutexLock recvcs,sendcs;
 	char recv_buf[2000];
 	int recvL = 0;
-
+   
 protected:
-    //virtual void CallBackFun(std::vector<uint8_t>,void *) = 0;
+    virtual void CallBackFuntion(std::vector<uint8_t>,void *) = 0;
 };
 #endif

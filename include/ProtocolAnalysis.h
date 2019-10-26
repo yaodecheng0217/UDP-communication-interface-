@@ -3,8 +3,8 @@
  * @version: V1.0
  * @Author: Yaodecheng
  * @Date: 2019-10-19 10:18:47
- * @LastEditors: Yaodecheng
- * @LastEditTime: 2019-10-19 16:57:51
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2019-10-26 18:20:47
  */
 #include "UdpMessage.h"
 
@@ -23,17 +23,15 @@ void Add_T_2_sendData(T in, FrameDataStruct *out)
     memcpy(&out->_databuff[0], &in, sizeof(in));
 }
 
-class ProtocolAnalysis
+class ProtocolAnalysis : public UdpMessage
 {
     typedef void (*OutputDataFun)(FrameDataStruct data);
 
 private:
-   
-    static void *dataprocess(std::vector<uint8_t> databuffer, void *);
     OutputDataFun _outputfun;
+     void CallBackFuntion(std::vector<uint8_t>,void *);
 
 public:
-    UdpMessage udpmessage;
     ProtocolAnalysis(OutputDataFun);
     ~ProtocolAnalysis();
     int init(const int port);
