@@ -1,3 +1,3 @@
-cd ./build2
+cd ./build
 cmake -G "MinGW Makefiles" ..
 make

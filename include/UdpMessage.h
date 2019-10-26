@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: Yaodecheng
  * @Date: 2019-10-13 14:02:01
- * @LastEditTime: 2019-10-21 22:11:39
+ * @LastEditTime: 2019-10-26 14:35:33
  * @LastEditors: Please set LastEditors
  */
 /*
@@ -96,5 +96,8 @@ private:
 
 	char recv_buf[2000];
 	int recvL = 0;
+
+protected:
+    //virtual void CallBackFun(std::vector<uint8_t>,void *)=0;
 };
 #endif
