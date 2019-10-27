@@ -1,14 +1,7 @@
-<!--
- * @Author: your name
- * @Date: 2019-10-26 13:39:25
- * @LastEditTime: 2019-10-27 10:10:28
- * @LastEditors: your name
- * @Description: In User Settings Edit
- * @FilePath: \ceshi\README.md
- -->
 # UDP-communication-interface-
+
 YADE 通用udp通讯协议接口
-#更新日志
+# 更新日志
 2019-10-27
 1.修改了UdpMessage接口为纯虚函数，由子类ProtocolAnalysis继承实现
 2.增加了校验和函数
