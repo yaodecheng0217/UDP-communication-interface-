@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: Yaodecheng
  * @Date: 2019-10-09 09:08:07
- * @LastEditTime: 2019-10-23 15:07:36
+ * @LastEditTime: 2019-10-27 10:05:47
  * @LastEditors: Please set LastEditors
  **/
 #include "ProtocolAnalysis.h"
@@ -13,11 +13,11 @@ void Callback_outdata(FrameDataStruct in)
 {
     switch (in.cmd_type)
     {
-    case ISSA_RES_PUT_EMPTY_STOCK_NAV:
+    case NULL_DATA:
     {
         //todo
         //定义对应结构体指针
-        PutEmptyStockNavData *p = (PutEmptyStockNavData *)&in._databuff[0];
+       PutEmptyStockNavData *p = (PutEmptyStockNavData *)&in._databuff[0];
         printf("PutEmptyStockNavData:\n");
         printf("id=%d\n", p->id);
         printf("x=%f\ny=%f\nz=%f\nyaw=%f\n\n", p->x, p->y, p->z, p->yaw);
@@ -33,21 +33,25 @@ void Callback_outdata(FrameDataStruct in)
 int main()
 {
     ProtocolAnalysis miananglysis(Callback_outdata);
-    miananglysis.init(8000);
+    miananglysis.init(9000);
 
     //确定数据结构和填充发送数据
     FrameDataStruct Xdata;
     Xdata.source_id = AGV;
     Xdata.cmd_id[0] = 0x00;
     Xdata.cmd_id[1] = 0x01;
-    Xdata.cmd_type = AGV_REQ_PUT_EMPTY_STOCK_NAV;
+    Xdata.cmd_type = NULL_DATA;
 
     //添加数据区到帧数据
-
+    PutEmptyStockNavData x;
+    x.id=125;
+    x.yaw=1.25;
+    Add_T_2_sendData(x,&Xdata);
+    
     printf("s=%d\n", (int)sizeof(int *));
     while (1)
     {
-        miananglysis.sendData("192.168.147.117", 8000, Xdata);
+        miananglysis.sendData("127.0.0.1", 9000, Xdata);
 #ifdef _WIN32
         Sleep(1000);
 #else

@@ -3,12 +3,13 @@
  * @Description: In User Settings Edit
  * @Author: Yaodecheng
  * @Date: 2019-10-13 14:35:32
- * @LastEditTime: 2019-10-23 14:31:29
+ * @LastEditTime: 2019-10-26 22:17:09
  * @LastEditors: Please set LastEditors
  */
 
 #include "UdpMessage.h"
-
+#define logi(_fmt,...) printf("[I] ");printf(_fmt "\n", ##__VA_ARGS__)
+#define loge(_fmt,...) printf("[E] ");printf(_fmt "\n", ##__VA_ARGS__)
 UdpMessage::UdpMessage()
 {
 }
@@ -16,7 +17,7 @@ UdpMessage::UdpMessage()
 UdpMessage::~UdpMessage()
 {
 }
-
+//单独创建一帧数据处理线程
 #ifdef _WIN32
 DWORD WINAPI UdpMessage::Recv_thread(void *prt)
 #else
@@ -24,15 +25,17 @@ void *UdpMessage::Recv_thread(void *prt)
 #endif
 {
     UdpMessage *p = (UdpMessage *)prt;
+    p->recvcs.lock();//转移缓冲区数据前上锁
     std::vector<uint8_t> buffer;
     for (size_t i = 0; i < p->recvL; i++)
     {
         buffer.push_back(p->recv_buf[i]);
     }
-    p->callbackFun(buffer, p->_context);
+     p->recvcs.unlock();
+    p->CallBackFuntion(buffer, p->_context);
     return 0;
 }
-
+//查询接收缓冲区线程
 void UdpMessage::recvudpfun()
 {
 #ifdef _WIN32
@@ -42,9 +45,12 @@ void UdpMessage::recvudpfun()
     if (pthread_create(&readThread, NULL, Recv_thread, this))
 #endif
     {
-        printf("Error creating readThread.\n");
+#ifdef Printf_Error_EN
+        loge("Error creating readThread.\n");
+#endif
     }
 }
+
 #ifdef _WIN32
 DWORD WINAPI UdpMessage::UDPrevthreadfun(void *ptr)
 #else
@@ -52,7 +58,6 @@ void *UdpMessage::UDPrevthreadfun(void *ptr)
 #endif
 {
     UdpMessage *P = (UdpMessage *)ptr;
-
     struct sockaddr_in addr_client;
     int len = sizeof(P->addr);
     while (1)
@@ -74,9 +79,8 @@ void *UdpMessage::UDPrevthreadfun(void *ptr)
     return 0;
 }
 
-int UdpMessage::init(int cliceport, Fun callback, void *prt)
+int UdpMessage::init(int cliceport, void *prt)
 {
-
 #ifdef _WIN32
     WORD wVersionRequested;
     WSADATA wsaData;
@@ -86,27 +90,24 @@ int UdpMessage::init(int cliceport, Fun callback, void *prt)
     err = WSAStartup(wVersionRequested, &wsaData);
     if (err != 0)
     {
-
-        exit(-4);
+        return -1;
     }
 
     if (LOBYTE(wsaData.wVersion) != 1 ||
         HIBYTE(wsaData.wVersion) != 1)
     {
         WSACleanup();
-        exit(-5);
+        return -1;
     }
 #endif
 
     port = cliceport;
-    callbackFun = callback;
     _context = prt;
     sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    //sock_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); //����������socket
     if (sock_fd < 0)
     {
-        printf("udp %d socket error!\n", cliceport);
-        exit(-2);
+        loge("udp %d socket error!\n", cliceport);
+        return -1;
     }
 
     addr.sin_family = AF_INET;
@@ -118,9 +119,9 @@ int UdpMessage::init(int cliceport, Fun callback, void *prt)
 #endif
 
     int len = sizeof(addr);
-    if (bind(sock_fd, (sockaddr *)&addr, len) == -1) //��socket�󶨵�ַ
+    if (bind(sock_fd, (sockaddr *)&addr, len) == -1)
     {
-        printf("udp %d bink error!\n", cliceport);
+        loge("udp %d bink error!\n", cliceport);
 #ifdef _WIN32
         closesocket(sock_fd);
 #else
@@ -130,32 +131,23 @@ int UdpMessage::init(int cliceport, Fun callback, void *prt)
     }
     else
     {
-        printf("udp %d bink ok!\n", cliceport);
-        //���������߳�
+        logi("udp %d bink ok!\n", cliceport);
 #ifdef _WIN32
         if (CreateThread(NULL, 0, UDPrevthreadfun, this, 0, NULL) == NULL)
 #else
         if (pthread_create(&recvThread, NULL, UDPrevthreadfun, this))
 #endif
         {
-            printf("Error creating readThread.\n");
+            loge("Error creating readThread.\n");
+            return -1;
         }
     }
 
-    return 1;
+    return 0;
 }
 
 void UdpMessage::messagsend(const char *ip, int port, const char *data, int L)
 {
-    /*
-   struct sockaddr_in addr_serv;  
-   int len;  
-   memset(&addr_serv, 0, sizeof(addr_serv));  
-   addr_serv.sin_family = AF_INET;  
-   addr_serv.sin_addr.s_addr = inet_addr(ip);  
-   addr_serv.sin_port = htons(port);  
-   len = sizeof(addr_serv);  */
-
     ScopeLocker lock(&sendcs);
     struct sockaddr_in addr_server;
     memset(&addr_server, 0, sizeof(addr_server));
@@ -170,11 +162,11 @@ void UdpMessage::messagsend(const char *ip, int port, const char *data, int L)
     int len = sizeof(addr_server);
     if (sendto(sock_fd, data, L, 0, (struct sockaddr *)&addr_server, len) < 0)
     {
-        printf("udp ip=%s port=%d send error!%d\n", ip, port, sock_fd);
+        logi("udp ip=%s port=%d send error!%d\n", ip, port, sock_fd);
     }
     else
     {
-        //printf("udp ip=%s port=%d send ok ! %d\n", ip, port,sock_fd);
+        //logi("udp ip=%s port=%d send ok ! %d\n", ip, port,sock_fd);
     }
 }
 void UdpMessage::messagsend(const char *ip, int port, const std::string data)

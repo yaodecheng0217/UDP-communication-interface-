@@ -1,10 +1,12 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/AGV.dir/main.cpp.o"
-  "CMakeFiles/AGV.dir/src/ProtocolAnalysis.cpp.o"
-  "CMakeFiles/AGV.dir/src/UdpMessage.cpp.o"
-  "CMakeFiles/AGV.dir/src/thread_base.cpp.o"
+  "AGV.exe"
+  "AGV.exe.manifest"
   "AGV.pdb"
-  "AGV"
+  "CMakeFiles/AGV.dir/main.cpp.obj"
+  "CMakeFiles/AGV.dir/src/ProtocolAnalysis.cpp.obj"
+  "CMakeFiles/AGV.dir/src/UdpMessage.cpp.obj"
+  "CMakeFiles/AGV.dir/src/thread_base.cpp.obj"
+  "libAGV.dll.a"
 )
 
 # Per-language clean rules from dependency scanning.
