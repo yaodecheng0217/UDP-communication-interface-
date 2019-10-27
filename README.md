@@ -13,17 +13,17 @@ YADE 通用udp通讯协议接口
 1.修改了UdpMessage接口为纯虚函数，由子类ProtocolAnalysis继承实现
 2.增加了校验和函数
 
-##校验和计算:
-###发送方：对要数据累加，得到一个数据和，对和求反，即得到我们的校验值。然后把要发的数据和这个校验值一起发送给接收方。
-###接收方：对接收的数据（包括校验和）进行累加，然后加1，如果得到0，那么说明数据没有出现传输错误。
+## 校验和计算:
+### 发送方：对要数据累加，得到一个数据和，对和求反，即得到我们的校验值。然后把要发的数据和这个校验值一起发送给接收方。
+### 接收方：对接收的数据（包括校验和）进行累加，然后加1，如果得到0，那么说明数据没有出现传输错误。
     （注意，此处发送方和接收方用于保存累加结果的类型一定要一致uint8_t，否则加1就无法实现溢出从而无法得到0，校验就会无效）
-#初始化
+# 初始化
 ```c++
 ProtocolAnalysis miananglysis(Callback_outdata);//定义ProtocolAnalysis数据分析类，传入Callback_outdata自定义解包函数
                                                 //typedef void (*OutputDataFun)(FrameDataStruct data);
 miananglysis.init(9000);//解析函数初始化，传入端口号
 ```
-#数据打包方法
+# 数据打包方法
 ```c++
    //创建发送帧
     FrameDataStruct Xdata;
@@ -39,11 +39,11 @@ miananglysis.init(9000);//解析函数初始化，传入端口号
     x.yaw=1.25;
     Add_T_2_sendData(x,&Xdata);//将结构体添加到发送帧
 ```
-#数据发送
+# 数据发送
 ```c++
 miananglysis.sendData("127.0.0.1", 9000, Xdata);
 ```
-#数据解包方法
+# 数据解包方法
 ```c++
 //正确收到数据后会调用此函数进行数据解包
 void Callback_outdata(FrameDataStruct in)
