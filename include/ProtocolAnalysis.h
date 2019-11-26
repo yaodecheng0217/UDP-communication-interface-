@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2019-10-19 10:18:47
- * @LastEditTime: 2019-10-27 10:08:17
- * @LastEditors: your name
+ * @LastEditTime: 2019-11-26 14:48:37
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ceshi\include\ProtocolAnalysis.h
  */
@@ -31,7 +31,7 @@ void Add_T_2_sendData(T in, FrameDataStruct *out)
     memcpy(&out->_databuff[0], &in, sizeof(in));
 }
 
-class ProtocolAnalysis : public UdpMessage
+class ProtocolAnalysis : protected UdpMessage
 {
     typedef void (*OutputDataFun)(FrameDataStruct data);
 
