@@ -1,18 +1,10 @@
 /*
- * @Author: your name
- * @Date: 2019-10-19 10:18:47
- * @LastEditTime: 2019-10-27 10:08:17
- * @LastEditors: your name
- * @Description: In User Settings Edit
- * @FilePath: \ceshi\include\ProtocolAnalysis.h
- */
-/*
- * @Descripttion: YADE udp通讯协议解析
+ * @Descripttion: Adeall udp通讯协议解析
  * @version: V1.0
  * @Author: Yaodecheng
  * @Date: 2019-10-19 10:18:47
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2019-10-26 18:20:47
+ * @LastEditors  : Yaodecheng
+ * @LastEditTime : 2019-12-25 15:13:33
  */
 #include "UdpMessage.h"
 
@@ -20,10 +12,20 @@ struct FrameDataStruct
 {
     uint8_t source_id = 0;
     uint8_t cmd_id[2] = {0, 0};
+    int8_t ins=-1;
     uint8_t cmd_type = 0;
     std::vector<uint8_t> _databuff;
 };
-
+struct ReturnFrameData
+{
+    char * ip;
+    int prot;
+    uint8_t source_id = 0;
+    uint8_t cmd_id[2] = {0, 0};
+    int8_t ins=-1;
+    uint8_t cmd_type = 0;
+    std::vector<uint8_t> _databuff;
+};
 template <typename T>
 void Add_T_2_sendData(T in, FrameDataStruct *out)
 {
@@ -31,13 +33,12 @@ void Add_T_2_sendData(T in, FrameDataStruct *out)
     memcpy(&out->_databuff[0], &in, sizeof(in));
 }
 
-class ProtocolAnalysis : public UdpMessage
+class ProtocolAnalysis : protected UdpMessage
 {
-    typedef void (*OutputDataFun)(FrameDataStruct data);
-
+    typedef void (*OutputDataFun)(ReturnFrameData data);
 private:
     OutputDataFun _outputfun;
-     void CallBackFuntion(std::vector<uint8_t>,void *);
+    void CallBackFuntion(std::vector<uint8_t>,void *);
 
 public:
     ProtocolAnalysis(OutputDataFun);

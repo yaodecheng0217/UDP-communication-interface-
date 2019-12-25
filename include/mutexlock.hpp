@@ -2,14 +2,14 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-10-12 09:22:20
- * @LastEditTime: 2019-10-21 13:02:43
+ * @LastEditTime: 2019-11-10 12:30:07
  * @LastEditors: Please set LastEditors
  */
 #ifndef MUTEXLOCK_HPP_
 #define MUTEXLOCK_HPP_
 
 #ifdef _WIN32
-#include <Windows.h>
+#include <windows.h>
 #else
 #include <assert.h>
 #include <mutex>
@@ -43,25 +43,23 @@
 class MutexLock
 {
 public:
-    MutexLock()
-    {
-        InitializeCriticalSection(&cs);
-    }
-    ~MutexLock()
-    {
-        DeleteCriticalSection(&cs);
-    }
-    void lock()
-    {
-        EnterCriticalSection(&cs);
-    }
-    void unlock()
-    {
-        LeaveCriticalSection(&cs);
-    }
-
+	MutexLock()
+	{
+		hEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
+	}
+	~MutexLock()
+	{
+	}
+	void lock()
+	{
+		WaitForSingleObject(hEvent, INFINITE);  //等待对象为有信号状态
+	}
+	void unlock()
+	{
+		SetEvent(hEvent);
+	}
 private:
-    CRITICAL_SECTION cs;
+	HANDLE hEvent;  
 };
 #else
 class MutexLock

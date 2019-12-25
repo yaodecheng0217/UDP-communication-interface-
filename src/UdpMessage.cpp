@@ -3,8 +3,8 @@
  * @Description: In User Settings Edit
  * @Author: Yaodecheng
  * @Date: 2019-10-13 14:35:32
- * @LastEditTime: 2019-10-26 22:17:09
- * @LastEditors: Please set LastEditors
+ * @LastEditTime : 2019-12-25 14:55:13
+ * @LastEditors  : Yaodecheng
  */
 
 #include "UdpMessage.h"
@@ -31,7 +31,7 @@ void *UdpMessage::Recv_thread(void *prt)
     {
         buffer.push_back(p->recv_buf[i]);
     }
-     p->recvcs.unlock();
+    p->recvcs.unlock();
     p->CallBackFuntion(buffer, p->_context);
     return 0;
 }
@@ -58,14 +58,14 @@ void *UdpMessage::UDPrevthreadfun(void *ptr)
 #endif
 {
     UdpMessage *P = (UdpMessage *)ptr;
-    struct sockaddr_in addr_client;
+    //struct sockaddr_in addr_client;
     int len = sizeof(P->addr);
     while (1)
     {
 #ifdef _WIN32
-        P->recvL = recvfrom(P->sock_fd, P->recv_buf, sizeof(recv_buf), 0, (struct sockaddr *)&addr_client, &len);
+        P->recvL = recvfrom(P->sock_fd, P->recv_buf, sizeof(recv_buf), 0, (struct sockaddr *)&P->addr_client, &len);
 #else
-        P->recvL = recvfrom(P->sock_fd, P->recv_buf, sizeof(recv_buf), 0, (struct sockaddr *)&addr_client, (socklen_t *)&len);
+        P->recvL = recvfrom(P->sock_fd, P->recv_buf, sizeof(recv_buf), 0, (struct sockaddr *)&P->addr_client, (socklen_t *)&len);
 #endif
         if (P->recvL <= 0)
         {
@@ -73,6 +73,7 @@ void *UdpMessage::UDPrevthreadfun(void *ptr)
         }
         else
         {
+            //printf(">>>>%d,%s\n",ntohs(P->addr_client.sin_port),inet_ntoa(P->addr_client.sin_addr));
             P->recvudpfun();
         }
     }
