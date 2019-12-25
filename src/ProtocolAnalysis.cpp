@@ -3,8 +3,8 @@
  * @version: 
  * @Author: Yaodecheng
  * @Date: 2019-10-19 10:26:48
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2019-11-26 14:56:34
+ * @LastEditors  : Yaodecheng
+ * @LastEditTime : 2019-12-25 14:54:52
  */
 
 #include "ProtocolAnalysis.h"
@@ -40,7 +40,7 @@ void ProtocolAnalysis::sendData(const char *ip, int prot, FrameDataStruct sdata)
     sendbuff[2] = (uint8_t)Version;
     sendbuff[3] = (uint8_t)(Version >> 8);
 
-    sendbuff[4] = 0;
+    sendbuff[4] = sdata.ins;
     sendbuff[5] = 0;
     sendbuff[6] = 0;
 
@@ -96,10 +96,12 @@ void ProtocolAnalysis::CallBackFuntion(std::vector<uint8_t> databuffer, void *pt
 
         uint16_t Version;
         memcpy(&Version, &databuffer[2], 2);
+       
         switch (Version)
         {
-        case 1:
+         case 1:
         {
+            //printf("version= %d\n",Version);
             //检查校验和
             uint8_t ret = 0;
             for (size_t i = 2; i < bufferLength - 2; i++)
@@ -113,7 +115,9 @@ void ProtocolAnalysis::CallBackFuntion(std::vector<uint8_t> databuffer, void *pt
                 printf("Checksum error = %d\n", ret);
                 return;
             }
-            FrameDataStruct out;
+        
+            ReturnFrameData out;
+            out.ins=databuffer[4];
             out.source_id = databuffer[7];
             out.cmd_id[0] = databuffer[8];
             out.cmd_id[1] = databuffer[9];
@@ -124,11 +128,14 @@ void ProtocolAnalysis::CallBackFuntion(std::vector<uint8_t> databuffer, void *pt
             out._databuff.resize(datalength);
             if (datalength > 0)
                 memcpy(&out._databuff[0], &databuffer[15], datalength);
+            out.prot=ntohs(addr_client.sin_port);
+            out.ip=inet_ntoa(addr_client.sin_addr);
             _outputfun(out);
         }
         break;
 
         default:
+            printf("ProtocolAnalysis Verstion ERROR !\n");
             break;
         }
     }

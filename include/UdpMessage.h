@@ -76,5 +76,6 @@ private:
    
 protected:
     virtual void CallBackFuntion(std::vector<uint8_t>,void *) = 0;
+	struct sockaddr_in addr_client;
 };
 #endif
